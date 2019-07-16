@@ -184,6 +184,8 @@ class AD770X():
 
         b1 = self.spi.xfer([0x0])[0]
 
+        time.sleep(0.1)
+
         self.chip_unselect()
 
         return (b1 & 0x80) == 0x0
@@ -197,11 +199,14 @@ class AD770X():
         self.chip_unselect()    
 
 def main(args):
-    import time
-    ad7705 = AD770X(5)    
+    vref = 5.0
+    ad7705 = AD770X(5)
     ad7705.initChannel(CHN_AIN1)
+    ad7705.initChannel(CHN_AIN2)
     while True :
-        print(ad7705.readADResultRaw(CHN_AIN1))
+        adc_ch1 = ad7705.readVoltage(CHN_AIN1, vref)
+        adc_ch2 = ad7705.readVoltage(CHN_AIN2, vref)
+        print('ADC: CH1=%f\tCH2=%f' % (adc_ch1, adc_ch2))
         time.sleep (0.5)
 
 if __name__ == '__main__':
