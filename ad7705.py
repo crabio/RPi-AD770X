@@ -84,11 +84,13 @@ SPEED = 50000
 DELAY = 10
 
 class AD770X():
-    def __init__(self,gpio_cs,bus=0,device=0) :    
+    def __init__(self,gpio_cs,vref=5.0,bus=0,device=0) :    
         self.gpio_cs = gpio_cs
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(self.gpio_cs, GPIO.OUT)
         self.chip_unselect()
+        
+        self.vref = vref
 
         self.spi = spidev.SpiDev()
         self.spi.open(bus, device)        
@@ -174,8 +176,8 @@ class AD770X():
 
         return self.readADResult()
 
-    def readVoltage(self,channel,vref,factor=1) :    
-        return float(self.readADResultRaw(channel)) / 65536.0 * vref * factor
+    def readVoltage(self,channel,factor=1) :    
+        return float(self.readADResultRaw(channel)) / 65536.0 * self.vref * factor
 
     def dataReady(self,channel) :
         self.setNextOperation(REG_CMM, channel, 1)
@@ -199,13 +201,12 @@ class AD770X():
         self.chip_unselect()    
 
 def main(args):
-    vref = 5.0
     ad7705 = AD770X(5)
     ad7705.initChannel(CHN_AIN1)
     ad7705.initChannel(CHN_AIN2)
     while True :
-        adc_ch1 = ad7705.readVoltage(CHN_AIN1, vref)
-        adc_ch2 = ad7705.readVoltage(CHN_AIN2, vref)
+        adc_ch1 = ad7705.readVoltage(CHN_AIN1)
+        adc_ch2 = ad7705.readVoltage(CHN_AIN2)
         print('ADC: CH1=%f\tCH2=%f' % (adc_ch1, adc_ch2))
         time.sleep (0.5)
 
